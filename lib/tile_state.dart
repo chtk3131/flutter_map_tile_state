@@ -3,19 +3,36 @@ import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tuple/tuple.dart';
 
+/**
+ * * flutter_map 0.14.0には存在したクラス
+ * * 1.0.0でクラスの内容が一新したのでエラーになる
+ * * 0.14.0の内容を記載して実験
+ */
+class Level {
+  late double zIndex;
+  CustomPoint? origin;
+  late double zoom;
+  late CustomPoint translatePoint;
+  late double scale;
+}
+
 class PositionInfo {
   CustomPoint point;
   double width;
   double height;
   String coordsKey;
   double scale;
-  PositionInfo({required this.point, required this.width, required this.height, required this.coordsKey, required this.scale});
+  PositionInfo(
+      {required this.point,
+      required this.width,
+      required this.height,
+      required this.coordsKey,
+      required this.scale});
 
   @override
   String toString() {
     return 'point:$point width:$width height:$height coordsKey:$coordsKey scale:$scale';
   }
-
 }
 
 class Coords<T extends num> extends CustomPoint<T> {
@@ -39,7 +56,6 @@ class Coords<T extends num> extends CustomPoint<T> {
 }
 
 class TileState {
-
   final Map<double, Level> _levels = {};
   Level _level = Level();
   final mapState;
@@ -67,8 +83,8 @@ class TileState {
     return Bounds(pixelCenter - halfSize, pixelCenter + halfSize);
   }
 
-  Bounds pxBoundsToTileRange(Bounds bounds,[tileSize = 256]) {
-    final tsPoint = CustomPoint(tileSize,tileSize);
+  Bounds pxBoundsToTileRange(Bounds bounds, [tileSize = 256]) {
+    final tsPoint = CustomPoint(tileSize, tileSize);
 
     return Bounds(
       bounds.min.unscaleBy(tsPoint).floor(),
@@ -77,8 +93,7 @@ class TileState {
   }
 
   CustomPoint _getTilePos(Coords coords, tileSize) {
-
-    if(_levels[coords.z] == null) {
+    if (_levels[coords.z] == null) {
       _updateLevels();
     }
     var level = _levels[coords.z];
@@ -87,7 +102,7 @@ class TileState {
 
   Bounds getBounds() => getTiledPixelBounds(mapState);
 
-  Bounds getTileRange() => pxBoundsToTileRange(getBounds(),256);
+  Bounds getTileRange() => pxBoundsToTileRange(getBounds(), 256);
 
   void _setView(LatLng center, double zoom) {
     var tileZoom = zoom.roundToDouble();
@@ -107,10 +122,10 @@ class TileState {
     _wrapX = crs.wrapLng;
     if (_wrapX != null) {
       var first = (map.project(LatLng(0.0, crs.wrapLng!.item1), tileZoom).x /
-          tileSize.x)
+              tileSize.x)
           .floorToDouble();
       var second = (map.project(LatLng(0.0, crs.wrapLng!.item2), tileZoom).x /
-          tileSize.y)
+              tileSize.y)
           .ceilToDouble();
       _wrapX = Tuple2(first, second);
     }
@@ -118,16 +133,14 @@ class TileState {
     _wrapY = crs.wrapLat;
     if (_wrapY != null) {
       var first = (map.project(LatLng(crs.wrapLat!.item1, 0.0), tileZoom).y /
-          tileSize.x)
+              tileSize.x)
           .floorToDouble();
       var second = (map.project(LatLng(crs.wrapLat!.item2, 0.0), tileZoom).y /
-          tileSize.y)
+              tileSize.y)
           .ceilToDouble();
       _wrapY = Tuple2(first, second);
     }
   }
-
-
 
   void _setZoomTransforms(LatLng center, double zoom) {
     for (var i in _levels.keys) {
@@ -154,8 +167,9 @@ class TileState {
 
     for (var z in _levels.keys) {
       var levelZ = _levels[z];
-      if(levelZ != null) {
-        if (z == zoom) { // recheck here.....
+      if (levelZ != null) {
+        if (z == zoom) {
+          // recheck here.....
           var levelZi = _levels[z];
           if (levelZi != null) {
             levelZi.zIndex = maxZoom = (zoom - z).abs();
@@ -166,30 +180,27 @@ class TileState {
 
     var max = maxZoom + 2; // arbitrary, was originally for overzoom
 
-    for(var tempZoom in [for(var i=0.0; i<max; i+=1.0) i]) {
-
+    for (var tempZoom in [for (var i = 0.0; i < max; i += 1.0) i]) {
       var level = _levels[tempZoom];
       var map = mapState;
 
       if (level == null) {
         level = _levels[tempZoom.toDouble()] = Level();
         level.zIndex = maxZoom;
-        var newOrigin = map.project(map.unproject(map.getPixelOrigin()), tempZoom);
+        var newOrigin =
+            map.project(map.unproject(map.getPixelOrigin()), tempZoom);
         level.origin = newOrigin;
         level.zoom = tempZoom;
         _setZoomTransform(level, map.center, map.zoom);
       }
-
     }
 
     var levelZoom = _levels[zoom];
-    if(levelZoom != null)
-      _level = levelZoom;
-
+    if (levelZoom != null) _level = levelZoom;
   }
 
-  PositionInfo getTilePositionInfo( double z, double x, double y ) {
-    var coords = Coords(x,y);
+  PositionInfo getTilePositionInfo(double z, double x, double y) {
+    var coords = Coords(x, y);
     coords.z = z.floorToDouble();
 
     var tilePos = _getTilePos(coords, tileSize);
@@ -201,7 +212,12 @@ class TileState {
     var height = tileSize.y * scale;
     var coordsKey = tileCoordsToKey(coords);
 
-    return PositionInfo(point: pos, width: width, height: height, coordsKey: coordsKey, scale: width / tileSize.x );
+    return PositionInfo(
+        point: pos,
+        width: width,
+        height: height,
+        coordsKey: coordsKey,
+        scale: width / tileSize.x);
   }
 
   String tileCoordsToKey(Coords coords) {
@@ -216,22 +232,22 @@ class TileState {
     return _tileZoom;
   }
 
-  void loopOverTiles(  myFunction(num i,j, pos2, matrix3) ) {
+  void loopOverTiles(myFunction(num i, j, pos2, matrix3)) {
     Bounds _tileRange = getTileRange();
 
-    outerloop: for (var j = _tileRange.min.y; j <= _tileRange.max.y; j++) {
-      innerloop: for (var i = _tileRange.min.x; i <= _tileRange.max.x; i++) {
-
-        var pos = getTilePositionInfo(
-            getTileZoom(), i.toDouble(), j.toDouble());
+    outerloop:
+    for (var j = _tileRange.min.y; j <= _tileRange.max.y; j++) {
+      innerloop:
+      for (var i = _tileRange.min.x; i <= _tileRange.max.x; i++) {
+        var pos =
+            getTilePositionInfo(getTileZoom(), i.toDouble(), j.toDouble());
 
         var matrix = Matrix4.identity()
           ..translate(pos.point.x.toDouble(), pos.point.y.toDouble())
           ..scale(pos.scale);
 
-        myFunction( i, j, pos, matrix );
+        myFunction(i, j, pos, matrix);
       }
     }
-
   }
 }
