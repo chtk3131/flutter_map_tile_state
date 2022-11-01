@@ -38,6 +38,19 @@ class Coords<T extends num> extends CustomPoint<T> {
   int get hashCode => hashValues(x.hashCode, y.hashCode, z.hashCode);
 }
 
+/**
+ * * flutter_map 0.14.0には存在したクラス
+ * * 1.0.0でクラスの内容が一新したのでエラーになる
+ * * 0.14.0の内容を記載して実験
+ */
+class Level {
+  late double zIndex;
+  CustomPoint? origin;
+  late double zoom;
+  late CustomPoint translatePoint;
+  late double scale;
+}
+
 class TileState {
 
   final Map<double, Level> _levels = {};
